@@ -3,4 +3,4 @@ pandas
 xlsxwriter
 pdfplumber
 openai
-PyMuPDF==1.24.1
+
