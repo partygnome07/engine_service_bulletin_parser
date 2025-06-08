@@ -1,32 +1,7 @@
-import pdfplumber
-import re
+import json
+from openai import OpenAI
 
-def extract_text_from_pdf(path: str) -> str:
-    """
-    Extracts raw text from a PDF using pdfplumber.
-    Joins all pages with form feed (\f) markers.
-    """
-    with pdfplumber.open(path) as pdf:
-        return "\f".join([page.extract_text() or "" for page in pdf.pages])
-
-def detect_engine_type(filename: str, first_page_text: str) -> str:
-    """
-    Detects whether a file is for a CFM or LEAP engine based on filename or content.
-    """
-    fname = filename.upper()
-    text = first_page_text.upper()
-
-    if "CFM56" in fname or re.search(r"\bCFM56\b", text):
-        return "cfm"
-    if "LEAP" in fname or re.search(r"\bLEAP-?1B\b", text):
-        return "leap"
-    raise ValueError(f"Cannot detect engine type from: {filename}")
-
-def call_extraction(text: str, function_schema: dict, client) -> dict:
-    """
-    Calls the OpenAI API using the provided schema and text.
-    You must pass in a valid OpenAI `client`.
-    """
+def call_extraction(text: str, function_schema: dict, client: OpenAI) -> dict:
     response = client.chat.completions.create(
         model="gpt-4o",
         temperature=0.0,
@@ -37,4 +12,8 @@ def call_extraction(text: str, function_schema: dict, client) -> dict:
         functions=[function_schema],
         function_call={"name": function_schema["name"]}
     )
-    return response.choices[0].message.function_call.arguments
+    raw_args = response.choices[0].message.function_call.arguments
+    try:
+        return json.loads(raw_args)
+    except Exception as e:
+        raise ValueError(f"❌ Failed to parse function output: {raw_args}") from e
