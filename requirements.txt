@@ -3,4 +3,4 @@ pandas
 xlsxwriter
 pdfplumber
 openai
-
+python-dotenv
