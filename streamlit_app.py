@@ -39,7 +39,8 @@ if uploaded_files:
         with open(file_name, "wb") as f:
             f.write(uploaded_file.read())
 
-        st.markdown(f"### 🧠 Processing: `{file_name}`")
+            st.markdown(f"### 🧠 Processing: `{file_name}`")
+
 
         try:
             # Step 1: Extract and detect engine
