@@ -8,6 +8,11 @@ from pdf_parser.extractor import extract_text_from_pdf, detect_engine_type, call
 from pdf_parser.schemas import leap_schema, cfm_schema
 from pdf_parser.formatter import build_excel_output
 
+from openai import OpenAI
+import os
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 st.set_page_config(page_title="🛠️ Aircraft SB Parser", layout="centered")
 
 st.markdown("## 🛩️ Aircraft Service Bulletin Parser")
@@ -50,7 +55,7 @@ if uploaded_files:
             schema = leap_schema if engine_type == "leap" else cfm_schema
 
             # Step 2: Parse the document
-            parsed = call_extraction(text, schema)
+            parsed = call_extraction(text, schema, client)
 
             # Step 3: Build Excel
             excel_bytes, excel_df = build_excel_output(parsed, engine_type)
