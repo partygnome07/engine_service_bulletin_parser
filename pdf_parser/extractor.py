@@ -2,17 +2,21 @@ import re
 import json
 import pdfplumber
 from openai import OpenAI
+from typing import Union
+import io
 
-def extract_text_from_pdf(pdf_path: str) -> str:
+def extract_text_from_pdf(pdf_bytes: Union[str, bytes]) -> str:
     """Extract all text from a PDF file using pdfplumber."""
-    with pdfplumber.open(pdf_path) as pdf:
-        return "\f".join([page.extract_text() or "" for page in pdf.pages])
+    if isinstance(pdf_bytes, str):  # fallback in case of legacy use
+        with pdfplumber.open(pdf_bytes) as pdf:
+            return "\f".join([page.extract_text() or "" for page in pdf.pages])
+    else:
+        with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
+            return "\f".join([page.extract_text() or "" for page in pdf.pages])
 
 def detect_engine_type(filename: str, first_page_text: str) -> str:
-    """Detect engine type based on filename or text."""
     fname = filename.upper()
     text = first_page_text.upper()
-
     if "CFM56" in fname or "CFM56" in text:
         return "cfm"
     if "LEAP" in fname or "LEAP-1B" in text:
@@ -20,7 +24,6 @@ def detect_engine_type(filename: str, first_page_text: str) -> str:
     raise ValueError(f"Unknown engine type in file: {filename}")
 
 def call_extraction(text: str, function_schema: dict, client: OpenAI) -> dict:
-    """Call OpenAI function API with schema and return structured output."""
     response = client.chat.completions.create(
         model="gpt-4o",
         temperature=0.0,
