@@ -1,11 +1,18 @@
+import tempfile
+
 for uploaded_file in uploaded_files:
     file_name = uploaded_file.name
-    file_bytes = uploaded_file.read()  # read PDF in memory
+    file_bytes = uploaded_file.read()
     st.markdown(f"### 🧠 Processing: `{file_name}`")
 
     try:
+        # 🔧 Save file temporarily for pdfplumber
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+            tmp.write(file_bytes)
+            tmp_path = tmp.name
+
         # Step 1: Extract and detect engine
-        text = extract_text_from_pdf(file_bytes)
+        text = extract_text_from_pdf(tmp_path)
         engine_type = detect_engine_type(file_name, text.split("\f", 1)[0])
         schema = leap_schema if engine_type == "leap" else cfm_schema
 
