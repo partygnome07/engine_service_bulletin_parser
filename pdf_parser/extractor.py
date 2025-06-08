@@ -1,12 +1,12 @@
 import re
-import fitz  # PyMuPDF
 import json
+import pdfplumber
 from openai import OpenAI
 
 def extract_text_from_pdf(pdf_path: str) -> str:
-    """Extract all text from a PDF file using PyMuPDF."""
-    doc = fitz.open(pdf_path)
-    return "\f".join([page.get_text() for page in doc])
+    """Extract all text from a PDF file using pdfplumber."""
+    with pdfplumber.open(pdf_path) as pdf:
+        return "\f".join([page.extract_text() or "" for page in pdf.pages])
 
 def detect_engine_type(filename: str, first_page_text: str) -> str:
     """Detect engine type based on filename or text."""
