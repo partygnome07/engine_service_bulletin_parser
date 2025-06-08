@@ -22,14 +22,11 @@ def detect_engine_type(filename: str, first_page_text: str) -> str:
         return "leap"
     raise ValueError(f"Cannot detect engine type from: {filename}")
 
-def call_extraction(text: str, function_schema: dict, client=None) -> dict:
+def call_extraction(text: str, function_schema: dict, client) -> dict:
     """
     Calls the OpenAI API using the provided schema and text.
     You must pass in a valid OpenAI `client`.
     """
-    if client is None:
-        raise ValueError("Missing required OpenAI client")
-
     response = client.chat.completions.create(
         model="gpt-4o",
         temperature=0.0,
@@ -41,4 +38,3 @@ def call_extraction(text: str, function_schema: dict, client=None) -> dict:
         function_call={"name": function_schema["name"]}
     )
     return response.choices[0].message.function_call.arguments
-r PDF text extraction, engine detection, LLM call
