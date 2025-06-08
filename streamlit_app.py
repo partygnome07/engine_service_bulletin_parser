@@ -36,15 +36,13 @@ def append_to_master(excel_df: pd.DataFrame, engine_type: str):
 if uploaded_files:
     for uploaded_file in uploaded_files:
         file_name = uploaded_file.name
-        with open(file_name, "wb") as f:
-            f.write(uploaded_file.read())
+        file_bytes = uploaded_file.read()  # ✅ Read into memory (not saved to disk)
 
-            st.markdown(f"### 🧠 Processing: `{file_name}`")
-
+        st.markdown(f"### 🧠 Processing: `{file_name}`")
 
         try:
             # Step 1: Extract and detect engine
-            text = extract_text_from_pdf(file_name)
+            text = extract_text_from_pdf(file_bytes)  # ✅ Pass bytes, not file name
             engine_type = detect_engine_type(file_name, text.split("\f", 1)[0])
             schema = leap_schema if engine_type == "leap" else cfm_schema
 
